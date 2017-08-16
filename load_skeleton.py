@@ -37,7 +37,7 @@ import frameHeader as fHeader
 # 	24 - right thumb
 # --------------------------------------------------------------------------------------------------------------
 
-def read_skeleton_data( _file_Handler_, _verbose_ ):
+def read_skeleton_data( _file_Handler_, _ignore_tail_, _verbose_ ):
 
 	# Finally store all Frames ( with included joints per frame ) in this lists 
 	frames_of_the_set = []
@@ -46,20 +46,19 @@ def read_skeleton_data( _file_Handler_, _verbose_ ):
 	# Number of Skeletons in the set
 	nOSkel = 0
 
-	raw_Content = []
-
 	# Read the whole file in a data block.
+	raw_Content = []
 	raw_Content = _file_Handler_.readlines()
 	
 	# Get the number of Frames
 	number_of_frames = 0
 	number_of_frames = raw_Content[0]
-	if( _verbose_ == True):
+	if( _verbose_ is True ):
 		print( "Number of frames in the set: ", number_of_frames )      
 
 	# Cut the first line ( number of frames ) from the raw_Content
 	raw_Content = raw_Content[1:]
-	if( _verbose_ == True ):
+	if( _verbose_ is True  ):
 		print('Number of Skeletons: ', raw_Content[0] ) 
 
 	# Adapt the increment for the subsequent for loop to the number of skeletons in the set.
@@ -86,7 +85,7 @@ def read_skeleton_data( _file_Handler_, _verbose_ ):
 		if( noSkel == 1 ):
 			skeleton1 = store_skeleton(skeletal_block)
 			frames_of_the_set.append( skeleton1 )
-		if( noSkel == 2):
+		if( noSkel == 2 ):
 			# Get the first skeleton.
 			skeleton1 = skeletal_block[0:28]
 			#print('\n\n skeleton1: ', skeleton1 ) 
@@ -96,10 +95,40 @@ def read_skeleton_data( _file_Handler_, _verbose_ ):
 			#print('\n\n skeleton2: ', skeleton2 ) 
 			frames_2_of_the_set.append( store_skeleton(skeleton2 ) )
 
-	# # If more than one skeleton in the set check for the primary one 
+	# Crop the tail from the list ( in some cases the data of the tail isn't consistent )
+	if( _ignore_tail_ is True ):
+
+		if( noSkel == 1 ):
+
+			if( _verbose_ is True ):
+				print("Load_Skel: bef_crop: ", len( frames_of_the_set ))
+
+			frames_of_the_set = frames_of_the_set[:len( frames_of_the_set )-1]
+
+			if( _verbose_ is True ):
+				print("Load_Skel: aft_crop: ", len( frames_of_the_set ))
+
+		if( noSkel == 2 ):
+
+			if( _verbose_ is True ):
+				print("Load_Skel: bef_crop: ", len( frames_of_the_set ) )
+				print("Load_Skel: bef_crop2: ", len( frames_2_of_the_set ))
+
+			frames_of_the_set = frames_of_the_set[:len( frames_of_the_set )-1]
+			frames_2_of_the_set = frames_2_of_the_set[:len( frames_2_of_the_set )-1]
+
+			if( _verbose_ is True ):
+				print("Load_Skel: aft_crop: ", len( frames_of_the_set ))
+				print("Load_Skel: aft_crop2: ", len( frames_2_of_the_set ))
+
+	# Sometimes the number of skeletons in a set vary. 
+	# This is shit. But anyway, take the set with more frames.
+	# So, if the set length of both sets are equal -> go the straight way and check which one is the primary-
+	
 	dist_skel_1 = 0.0
 	dist_skel_2 = 0.0
 	if( noSkel > 1 ): 
+		# # If more than one skeleton in the set check for the primary one 
 		dist_skel_1, dist_skel_2 = check_for_primary_skeleton( frames_of_the_set, frames_2_of_the_set, _verbose_ )
 
 	export_frames = []
@@ -123,11 +152,10 @@ def check_for_primary_skeleton( _frames_of_the_set_, _frames_2_of_the_set_, verb
 
 	# Modus: Frame k+1 - Frame k ( of the same skeleton indicated by the skeleton id )
 	for k in range(0, len(_frames_of_the_set_) - 1 ):
-			dist1 += _frames_of_the_set_[k+1].ftf_joint_diff( _frames_of_the_set_[k] ,k)
+		dist1 += _frames_of_the_set_[k+1].ftf_joint_diff( _frames_of_the_set_[k], True )
 
 	for k in range(0, len(_frames_2_of_the_set_) - 1 ):
-			dist2 += _frames_2_of_the_set_[k+1].ftf_joint_diff( _frames_2_of_the_set_[k] ,k )
-
+		dist2 += _frames_2_of_the_set_[k+1].ftf_joint_diff( _frames_2_of_the_set_[k], True )
 
 	if( verbose == True ):
 		print( '#### Moved distance per skeleton ####')
@@ -192,8 +220,8 @@ def store_skeleton( _data_ ):
 				float(single_Tokens[6]),
 				float(single_Tokens[7]),
 				float(single_Tokens[8]),
-				float(single_Tokens[9])
-,				float(single_Tokens[10]),
+				float(single_Tokens[9]),
+				float(single_Tokens[10]),
 				float(single_Tokens[11])
 			)
 			# Store the single joint in a list of joints for the frame

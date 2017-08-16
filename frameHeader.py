@@ -52,7 +52,7 @@ class frameHeader():
 		self.__numberOfJonits = numberOfJoints
 
 	def get_NumberOfJoints( self ):
-		return self.__numberOfJonits
+		return self.__numberOfJoints
 
 	def get_LeftHand( self ):
 		return self.__handLeftConfidence, self.__handLeftState
@@ -73,11 +73,23 @@ class frameHeader():
 		return self.__listOfJoints
 
 	# Compute the absolute amount of movement between two frames over all joints
-	def ftf_joint_diff( self, _another_frame_ , i):
+	def ftf_joint_diff( self, _another_frame_, verbose ):
 
 		# Get the joints from the frames
 		_own_joints_ = self.get_ListOfJoints()
 		_another_joints_ = _another_frame_.get_ListOfJoints();
+
+		_own_joint_Len_ = len(_own_joints_)
+		_another_joint_Len_ = len(_another_joints_)
+
+		# Set the # of computation steps to the lenght of the shortest joint list
+		rangeMaximum = 0
+		if( _own_joint_Len_ > _another_joint_Len_ ):
+			rangeMaximum = _another_joint_Len_
+		elif( _own_joint_Len_ < _another_joint_Len_ ):
+			rangeMaximum = _own_joint_Len_
+		else:
+			rangeMaximum = _own_joint_Len_
 
 		# Create buckets for the world joint position
 		_own_world_ = (0,0,0)
@@ -86,15 +98,24 @@ class frameHeader():
 		# This is the bucket fpor the absoluit distance over all joints
 		_ive_come_a_long_way_baby_ = 0.0
 		
-		for k in range(0, self.get_NumberOfJoints() ):
+		number_of_skipped_frames = 0
 
-			# Get the world coordinates of each joint 
-			_own_world_ = np.array(_own_joints_[k].get_WorldJoint())
-			_another_world_ = np.array(_another_joints_[k].get_WorldJoint())
-			
-			# Compute the euclidean using numpy
-			_ive_come_a_long_way_baby_ += np.linalg.norm( _own_world_ - _another_world_ )
+		for k in range(0, rangeMaximum ):
 
+			# Skip uncomparable frames
+			try:
+				# Get the world coordinates of each joint 
+				_own_world_ = np.array(_own_joints_[k].get_WorldJoint())
+				_another_world_ = np.array(_another_joints_[k].get_WorldJoint())
+				
+				# Compute the euclidean using numpy
+				_ive_come_a_long_way_baby_ += np.linalg.norm( _own_world_ - _another_world_ )
+			except:
+				number_of_skipped_frames += 1
+
+		if( verbose is True  ):
+			if( number_of_skipped_frames > 0 ):
+				print("frameHeader: Number of frames skipped for inconsistency: ", number_of_skipped_frames)
 		# Return the shizzle
 		return _ive_come_a_long_way_baby_
 
