@@ -121,10 +121,25 @@ def read_skeleton_data( _file_Handler_, _ignore_tail_, _verbose_ ):
 				print("Load_Skel: aft_crop: ", len( frames_of_the_set ))
 				print("Load_Skel: aft_crop2: ", len( frames_2_of_the_set ))
 
+
+	# For short lists with only one skeleton frame ( this is also a inconsistency of the data )
+	lenFrame1 = len( frames_of_the_set )
+	lenFrame2 = len( frames_2_of_the_set )
+	if( noSkel == 2 ):
+		if( lenFrame1 < 2 ):
+			if( verbose == True ):
+				print("Skeleton 1 has only 1 Frame -> Skeleton 2 is set for the primary one.")
+			noSkel = 1
+			frames_of_the_set = frames_2_of_the_set
+
+		if( lenFrame2 < 2 ):
+			if( verbose == True ):
+				print("Skeleton 2 has only 1 Frame -> Skeleton 1 is set for the primary one.")
+			noSkel = 1 
+
 	# Sometimes the number of skeletons in a set vary. 
 	# This is shit. But anyway, take the set with more frames.
 	# So, if the set length of both sets are equal -> go the straight way and check which one is the primary-
-	
 	dist_skel_1 = 0.0
 	dist_skel_2 = 0.0
 	if( noSkel > 1 ): 
