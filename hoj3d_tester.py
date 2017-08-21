@@ -19,11 +19,8 @@ def write_hoj3d(filename,hoj_3d):
 	if not os.path.exists(os.path.dirname(test_directory+filename)):
 		os.makedirs(os.path.dirname(test_directory+filename))
 	file = open(test_directory+filename,'wb')
-	hoj_array = []
-	for line in hoj_3d:
-		hoj_array.extend(hoj_3d)
 	
-	np.save(file, np.asarray(hoj_array))
+	np.save(file, np.reshape(hoj_3d,168))
 		
 	file.close()
 
