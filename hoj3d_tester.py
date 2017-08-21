@@ -3,7 +3,6 @@
 # Python module import
 import numpy as np
 import math as ma
-from array import array
 import os
 
 from PIL import Image
@@ -20,9 +19,12 @@ def write_hoj3d(filename,hoj_3d):
 	if not os.path.exists(os.path.dirname(test_directory+filename)):
 		os.makedirs(os.path.dirname(test_directory+filename))
 	file = open(test_directory+filename,'wb')
+	hoj_array = []
 	for line in hoj_3d:
-		hoj_array = array('d', line)
-		hoj_array.tofile(file)
+		hoj_array.extend(hoj_3d)
+	
+	np.save(file, np.asarray(hoj_array))
+		
 	file.close()
 
 def test_hoj3d():
@@ -39,9 +41,8 @@ def test_hoj3d():
 
 	# load all hoj sets
 	for file in files_in_test_directory:
-		hoj_array = array('d')
-		hoj_array.frombytes(file.read())
-		hoj_arrays.append(np.array(hoj_array))
+		hoj_array = np.load(file)
+		hoj_arrays.append(hoj_array)
 		file.close()
 
 	# for each hoj set calculate the distance to every other hoj set
