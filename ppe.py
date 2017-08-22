@@ -106,9 +106,12 @@ def main():
 				if os.path.exists(os.path.splitext(file)[0]):
 					os.makedirs(os.path.splitext(file)[0])
 
-				try:
-					i = 0
-					for frame in all_skeleton_frames:
+
+				i = 0
+				for frame in all_skeleton_frames:
+
+					try:
+
 						list_of_joints = frame.get_ListOfJoints()
 
 						# gget joints from the paper 3, 5, 9, 6, 10, 13, 17, 14, 18, 12, 16
@@ -130,9 +133,10 @@ def main():
 						h3d_t.write_hoj3d(test_filename,hoj3d_set)
 						i += 1
 						break
-				except IndexError:
-					print("\n\nIndex error in: "+_skeleton_filename_+"\n\n")
-					index_exceptions_fH.write( _skeleton_filename_.split(".")[0].split("/")[7]+"\n" )
+						
+					except IndexError:
+						print("\n\nIndex error in: "+_skeleton_filename_+"\n\n")
+						index_exceptions_fH.write( _skeleton_filename_.split(".")[0].split("/")[7]+"\n" )
 		else:
 			#Store statistic data
 			number_of_inconsistent_data_sets += 1
