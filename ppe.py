@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env/python3
 
 # Python module import
 
@@ -23,6 +23,9 @@ def main():
 	action_list = None
 	ignore_tail = False
 	verbose = False
+
+	index_exceptions_fH = open('index_errors', 'a')
+	inconsistency_exception_fH = open('some_more_inconsistent_file', 'a')
 
 	number_of_inconsistent_data_sets = 0
 
@@ -103,33 +106,43 @@ def main():
 				if os.path.exists(os.path.splitext(file)[0]):
 					os.makedirs(os.path.splitext(file)[0])
 
-				i = 0
-				for frame in all_skeleton_frames:
-					list_of_joints = frame.get_ListOfJoints()
+				try:
+					i = 0
+					for frame in all_skeleton_frames:
+						list_of_joints = frame.get_ListOfJoints()
 
-					# gget joints from the paper 3, 5, 9, 6, 10, 13, 17, 14, 18, 12, 16
-					# joints_to_compute = []
-					# joints_to_compute.append(list_of_joints[3])		# head 		0
-					# joints_to_compute.append(list_of_joints[5])		# l elbow	1
-					# joints_to_compute.append(list_of_joints[9])		# r elbow	2
-					# joints_to_compute.append(list_of_joints[6])		# l hand 	3
-					# joints_to_compute.append(list_of_joints[10])		# r hand 	4
-					# joints_to_compute.append(list_of_joints[13])		# l knee 	5
-					# joints_to_compute.append(list_of_joints[17])		# r knee 	6
-					# joints_to_compute.append(list_of_joints[14])		# l feet 	7
-					# joints_to_compute.append(list_of_joints[18])		# r feet 	8
-					
-					hoj3d_set,time = h3d.compute_hoj3d(list_of_joints, list_of_joints[0], list_of_joints[1], list_of_joints[16], list_of_joints[12], joint_indexes=[3, 5, 9, 6, 10, 13, 17, 14, 18], use_triangle_function=True) # hip center, spine, hip right, hip left
+						# gget joints from the paper 3, 5, 9, 6, 10, 13, 17, 14, 18, 12, 16
+						# joints_to_compute = []
+						# joints_to_compute.append(list_of_joints[3])		# head 		0
+						# joints_to_compute.append(list_of_joints[5])		# l elbow	1
+						# joints_to_compute.append(list_of_joints[9])		# r elbow	2
+						# joints_to_compute.append(list_of_joints[6])		# l hand 	3
+						# joints_to_compute.append(list_of_joints[10])		# r hand 	4
+						# joints_to_compute.append(list_of_joints[13])		# l knee 	5
+						# joints_to_compute.append(list_of_joints[17])		# r knee 	6
+						# joints_to_compute.append(list_of_joints[14])		# l feet 	7
+						# joints_to_compute.append(list_of_joints[18])		# r feet 	8
+						
+						hoj3d_set,time = h3d.compute_hoj3d(list_of_joints, list_of_joints[0], list_of_joints[1], list_of_joints[16], list_of_joints[12], joint_indexes=[3, 5, 9, 6, 10, 13, 17, 14, 18], use_triangle_function=True) # hip center, spine, hip right, hip left
 
-					# testing
-					test_filename = os.path.splitext(file)[0] + "/" + os.path.splitext(file)[0] + "_{0:0=3d}".format(i)
-					h3d_t.write_hoj3d(test_filename,hoj3d_set)
-					i += 1
+						# testing
+						test_filename = os.path.splitext(file)[0] + "/" + os.path.splitext(file)[0] + "_{0:0=3d}".format(i)
+						h3d_t.write_hoj3d(test_filename,hoj3d_set)
+						i += 1
+						break
+				except IndexError:
+					print("\n\nIndex error in: "+_skeleton_filename_+"\n\n")
+					index_exceptions_fH.write( _skeleton_filename_.split(".")[0].split("/")[7]+"\n" )
 		else:
 			#Store statistic data
 			number_of_inconsistent_data_sets += 1
 			print("\n")			
 			print("!!! Actual set " + _skeleton_filename_ + " has missing or incomplete skeleton data. !!!\n\n")
+			inconsistency_exception_fH.write( _skeleton_filename_.split(".")[0].split("/")[7]+"\n" )
+
+
+	index_exceptions_fH.close()
+	inconsistency_exception_fH.close()
 
 	computational_end_time = tM.time()
 	timeDiff = dT.timedelta(seconds=computational_end_time - computational_start_time)
