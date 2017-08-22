@@ -106,7 +106,6 @@ def main():
 				if os.path.exists(os.path.splitext(file)[0]):
 					os.makedirs(os.path.splitext(file)[0])
 
-
 				i = 0
 				for frame in all_skeleton_frames:
 
@@ -132,7 +131,6 @@ def main():
 						test_filename = os.path.splitext(file)[0] + "/" + os.path.splitext(file)[0] + "_{0:0=3d}".format(i)
 						h3d_t.write_hoj3d(test_filename,hoj3d_set)
 						i += 1
-						break
 						
 					except IndexError:
 						print("\n\nIndex error in: "+_skeleton_filename_+"\n\n")
