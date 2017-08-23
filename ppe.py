@@ -8,6 +8,7 @@ import math as ma
 import argparse
 import time as tM
 import datetime as dT
+import shutil 
 
 # Ppe module import
 
@@ -26,8 +27,17 @@ def main():
 
 	index_exceptions_fH = open('index_errors', 'a')
 	inconsistency_exception_fH = open('some_more_inconsistent_file', 'a')
+	nan_exception_fH = open('nan_errors', 'a')
+
+
+	# Statisitcal values 
+	number_of_consistent_data_sets = 0
 
 	number_of_inconsistent_data_sets = 0
+
+	number_of_nan_in_datasets = 0
+
+	number_of_datasets_with_occlusion = 0
 
 	# Parse the command line options.
 	path_name, skeleton_name, action_list, ignore_tail, verbose = parseOpts( sys.argv )
@@ -55,8 +65,6 @@ def main():
 		dir_list = dir_list[dir_list.index(skeleton_name): ]
 
 	# Variables for statistics
-	number_of_consistent_data_sets = 0
-	number_of_inconsistent_data_sets = 0
 	computational_start_time = tM.time()
 
 	# Step through the listed files in the dir_list
@@ -64,9 +72,6 @@ def main():
 
 		# Check if the choosen file is in the list of files with missed or incomplete data.
 		if( check_for_file_consistence( file.split(".")[0], _list_of_missed_skeletons_ ) is False ):
-
-			#Store statistic data
-			number_of_consistent_data_sets += 1
 
 			# Build the whole filename with absolute path
 			_skeleton_filename_ = path_name + file
@@ -127,13 +132,28 @@ def main():
 						
 						hoj3d_set,time = h3d.compute_hoj3d(list_of_joints, list_of_joints[0], list_of_joints[1], list_of_joints[16], list_of_joints[12], joint_indexes=[3, 5, 9, 6, 10, 13, 17, 14, 18], use_triangle_function=True) # hip center, spine, hip right, hip left
 
-						# testing
-						test_filename = os.path.splitext(file)[0] + "/" + os.path.splitext(file)[0] + "_{0:0=3d}".format(i)
-						h3d_t.write_hoj3d(test_filename,hoj3d_set)
-						i += 1
-						
+						# If a NaN warning is raised in the h3d.compute function the process will stop for this set and all the previously computed frames of this set will be removed
+						if( time is -1 ):
+							number_of_nan_in_datasets += 1
+							print("\n")			
+							print("!!! Actual set " + _skeleton_filename_ + " has at least one NaN value error. !!!\n\n")
+							name = _skeleton_filename_.split(".")[0].split("/")[7]
+							nan_exception_fH.write( name+"\n" )
+							del_path = '../hoj_test/'+name
+							shutil.rmtree(del_path)
+							break
+						else:
+							# testing
+							test_filename = os.path.splitext(file)[0] + "/" + os.path.splitext(file)[0] + "_{0:0=3d}".format(i)
+							h3d_t.write_hoj3d(test_filename,hoj3d_set)
+							i += 1
+							#Store statistic data
+							number_of_consistent_data_sets += 1
+		
 					except IndexError:
-						print("\n\nIndex error in: "+_skeleton_filename_+"\n\n")
+						number_of_datasets_with_occlusion += 1
+						print("\n")
+						print("!!! Actual set " + _skeleton_filename_ +" has index error(s). !!! \n\n")
 						index_exceptions_fH.write( _skeleton_filename_.split(".")[0].split("/")[7]+"\n" )
 		else:
 			#Store statistic data
@@ -142,18 +162,21 @@ def main():
 			print("!!! Actual set " + _skeleton_filename_ + " has missing or incomplete skeleton data. !!!\n\n")
 			inconsistency_exception_fH.write( _skeleton_filename_.split(".")[0].split("/")[7]+"\n" )
 
-
-	index_exceptions_fH.close()
-	inconsistency_exception_fH.close()
-
 	computational_end_time = tM.time()
 	timeDiff = dT.timedelta(seconds=computational_end_time - computational_start_time)
 
+	index_exceptions_fH.close()
+	inconsistency_exception_fH.close()
+	nan_exception_fH.close()
+
 	print("\n\nSome statistics: ---------------------------------------------------------------------------------------------------------------")
 	print("\n")
-	print("Number of correct computed datasets : ", number_of_consistent_data_sets)
-	print("Number of inconsistent datasets     : ", number_of_inconsistent_data_sets)
-	print("Used time for the computation       : ", timeDiff )
+	print("Number of correct computed datasets        : ", number_of_consistent_data_sets)
+	print("Number of inconsistent datasets            : ", number_of_inconsistent_data_sets)
+	print("Number of datasets with NaN entrys         : ", number_of_nan_in_datasets)
+	print("Number of datasets wth occluded body parts : ", number_of_datasets_with_occlusion)
+	print("----------------------------------------------------------")
+	print("Used time for the computation              : ", timeDiff )
 
 # ----------------------------------------------------------------------------------------------------------------------------------------------------------
 

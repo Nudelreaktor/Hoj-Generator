@@ -5,7 +5,7 @@ import numpy as np
 import math as ma
 import time
 import copy as cp
-
+import warnings
 
 # Ppe module import
 import frameHeader
@@ -85,7 +85,15 @@ def compute_hoj3d( list_of_joints, reference_join, reference_join_up, reference_
 	y_vector = np.cross(z_vector,x_vector)
 
 	for joint in joints_to_compute:
-		r,flat_r,alpha,theta = transform_coordinate(x_vector,y_vector,z_vector,joint.get_WorldJoint())
+
+		# Catch the zero division raised by NaNs in the skeleton files
+		with warnings.catch_warnings():
+			warnings.filterwarnings('error')
+			try:
+				r,flat_r,alpha,theta = transform_coordinate(x_vector,y_vector,z_vector,joint.get_WorldJoint())
+			except Warning:
+				return [],-1
+
 		inner, outer = r_function(flat_r, cut_radius)
 
 		j = 0
@@ -176,8 +184,15 @@ def transform_coordinate(x,y,z,vector):
 	cos_theta = np.dot(y,vector) / (r * y_len)
 
 	# print(cos_alpha)
+	if( cos_alpha < -1.0 ):
+		cos_alpha = -1.0
 
+	if( cos_alpha > 1.0 ):
+		cos_alpha = 1.0
+
+	alpha = 0.0
 	alpha = ma.acos(cos_alpha) * 360 / (2 * ma.pi)
+
 	if(cos_beta < 0):			# if vector is to the right of x
 		alpha = 360 - alpha
 
