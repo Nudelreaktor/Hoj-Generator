@@ -154,13 +154,13 @@ def main():
 						number_of_datasets_with_occlusion += 1
 						print("\n")
 						print("!!! Actual set " + _skeleton_filename_ +" has index error(s). !!! \n\n")
-						index_exceptions_fH.write( _skeleton_filename_.split(".")[0].split("/")[7]+"\n" )
+						index_exceptions_fH.write(os.path.basename(_skeleton_filename_)+"\n" )
 		else:
 			#Store statistic data
 			number_of_inconsistent_data_sets += 1
 			print("\n")			
 			print("!!! Actual set " + _skeleton_filename_ + " has missing or incomplete skeleton data. !!!\n\n")
-			inconsistency_exception_fH.write( _skeleton_filename_.split(".")[0].split("/")[7]+"\n" )
+			inconsistency_exception_fH.write( os.path.basename(_skeleton_filename_)+"\n" )
 
 	computational_end_time = tM.time()
 	timeDiff = dT.timedelta(seconds=computational_end_time - computational_start_time)
