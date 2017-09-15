@@ -20,7 +20,7 @@ def write_hoj3d(filename,hoj_3d):
 		os.makedirs(os.path.dirname(test_directory+filename))
 	file = open(test_directory+filename,'wb')
 	
-	np.save(file, np.reshape(hoj_3d,168))
+	np.save(file, np.array(hoj_3d).flatten())
 		
 	file.close()
 
