@@ -13,7 +13,7 @@ import shutil
 # Ppe module import
 
 import load_skeleton as l_S
-import hoj3d2 as h3d
+import hoj3d as h3d
 import hoj3d_tester as h3d_t
 
 # ----------------------------------------------------------------------------------------------------------------------------------------------------------
