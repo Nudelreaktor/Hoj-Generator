@@ -81,9 +81,22 @@ def transform_coordinate(x,y,z,vector):
 	# old_vector = (x,y,z)
 	# new_vector = (s,t,u)
 
-	s = vector_len(((vector * x) / (x_len * x_len)) * x)
-	t = vector_len(((vector * y) / (y_len * y_len)) * y)
-	u = vector_len(((vector * z) / (z_len * z_len)) * z)
+	s_vector = ((vector * x) / (x_len * x_len)) * x
+	t_vector = ((vector * y) / (y_len * y_len)) * y
+	u_vector = ((vector * z) / (z_len * z_len)) * z
+	
+	s = vector_len(s_vector)
+	t = vector_len(t_vector)
+	u = vector_len(u_vector)
+	
+	
+	# check if vector os in the same direction as the axis
+	if (vector_len(s_vector + x) < vector_len(s_vector) or vector_len(s_vector + x) < vector_len(x)):
+		s = -s;
+	if (vector_len(t_vector + y) < vector_len(t_vector) or vector_len(t_vector + y) < vector_len(y)):
+		t = -t;
+	if (vector_len(u_vector + z) < vector_len(u_vector) or vector_len(u_vector + z) < vector_len(z)):
+		u = -u;
 
 	return s,t,u
 
