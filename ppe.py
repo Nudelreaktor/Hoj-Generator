@@ -9,6 +9,7 @@ import argparse
 import time as tM
 import datetime as dT
 import shutil 
+import numpy as np
 
 # Ppe module import
 
@@ -40,9 +41,10 @@ def main():
 	number_of_datasets_with_occlusion = 0
 
 	# Parse the command line options.
-	path_name, skeleton_name, action_list, ignore_tail, verbose, compact = parseOpts( sys.argv )
+	path_name, skeleton_name, action_list, ignore_tail, verbose, compact, compact_file_name = parseOpts( sys.argv )
 
 	complete_hoj_set = []
+	set_labels = []
 
 	# ----------------------------------------------------------------------------------------------------
 	# Read configuration files 
@@ -149,8 +151,9 @@ def main():
 							hoj_sequence = None
 							break
 						else:
+							# If you want a compact dataset append every frame to a sequence
 							if compact:
-								hoj_sequence.append(hoj3d_set)
+								hoj_sequence.append(np.array(hoj3d_set).flatten())
 
 							else:
 								# testing
@@ -166,8 +169,13 @@ def main():
 						print("!!! Actual set " + _skeleton_filename_ +" has index error(s). !!! \n\n")
 						index_exceptions_fH.write(os.path.basename(_skeleton_filename_)+"\n" )
 			
+				# if you want a compact dataset add every sequence to the dataset
 				if (hoj_sequence is not None) and (compact):
 					complete_hoj_set.append(np.array(hoj_sequence))
+					
+					set_labels.append(int(os.path.splitext(file)[0][-3:]))
+					
+					
 
 		else:
 			#Store statistic data
@@ -176,8 +184,16 @@ def main():
 			print("!!! Actual set " + _skeleton_filename_ + " has missing or incomplete skeleton data. !!!\n\n")
 			inconsistency_exception_fH.write( os.path.basename(_skeleton_filename_)+"\n" )
 
+	# save the compact dataset
 	if compact:
-		np.save(np.array(complete_hoj_set))
+		dataset_file = open(compact_file_name, 'wb')
+		print(set_labels)
+		dataset = []
+		dataset.append(np.array(complete_hoj_set))
+		dataset.append(np.array(set_labels))
+		
+		np.save(dataset_file,np.array(dataset))
+		dataset_file.close()
 
 	computational_end_time = tM.time()
 	timeDiff = dT.timedelta(seconds=computational_end_time - computational_start_time)
@@ -245,7 +261,8 @@ def parseOpts( argv ):
 	parser.add_argument("-aL", "--action_list", action='store', dest='action_list', help="A list of actions in the form: -aL A001,A002,A003,...  ")
 	parser.add_argument("-iT", "--ignore_tail", action='store_true', dest='ignore_tail', default='False', help="The last frame in each set will be skipped if this flag is enabled." )
 	parser.add_argument("-v", "--verbose", action='store_true', dest='verbose', default='False', help="True if you want to listen to the chit-chat.")
-	parser.add_argument("-c", "--compact", action='store_true', dest='compact', default='False', help="If ser it creates a large compact dataset file instasd of a hoj directory structure.")
+	parser.add_argument("-c", "--compact", action='store_true', dest='compact', default='False', help="If set it creates a large compact dataset file instasd of a hoj directory structure.")
+	parser.add_argument("-cF", "--compact_file", action='store', dest='compact_file', help="The path where the compact dataset will be saved.")
 
 
 	# finally parse the command line 
@@ -273,6 +290,11 @@ def parseOpts( argv ):
 		action_list = args.action_list.split(",")
 	else:
 		action_list = None
+		
+	if( args.compact_file ):
+		compact_file = args.compact_file
+	else:		
+		compact_file = "dataset.ds"
 
 	print ("\nConfiguration:")
 	print ("----------------------------------------------------------------------------------------------------------------------------")
@@ -284,7 +306,7 @@ def parseOpts( argv ):
 	print ("compact      : ", args.compact)
 	print ("\n\n")
 
-	return path_name, skeleton_name, action_list, args.ignore_tail, args.verbose, args.compact
+	return path_name, skeleton_name, action_list, args.ignore_tail, args.verbose, args.compact, compact_file
 
 # ----------------------------------------------------------------------------------------------------------------------------------------------------------
 
