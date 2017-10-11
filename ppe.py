@@ -13,7 +13,7 @@ import shutil
 # Ppe module import
 
 import load_skeleton as l_S
-import hoj3d as h3d
+import hoj3d2 as h3d
 import hoj3d_tester as h3d_t
 
 # ----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -40,9 +40,7 @@ def main():
 	number_of_datasets_with_occlusion = 0
 
 	# Parse the command line options.
-	path_name, skeleton_name, action_list, ignore_tail, verbose, compact = parseOpts( sys.argv )
-
-	complete_hoj_set = []
+	path_name, skeleton_name, action_list, ignore_tail, verbose = parseOpts( sys.argv )
 
 	# ----------------------------------------------------------------------------------------------------
 	# Read configuration files 
@@ -113,8 +111,6 @@ def main():
 				if os.path.exists(os.path.splitext(file)[0]):
 					os.makedirs(os.path.splitext(file)[0])
 
-				hoj_sequence = []
-
 				i = 0
 				for frame in all_skeleton_frames:
 
@@ -141,22 +137,16 @@ def main():
 							number_of_nan_in_datasets += 1
 							print("\n")			
 							print("!!! Actual set " + _skeleton_filename_ + " has at least one NaN value error. !!!\n\n")
-							name = os.path.basename(_skeleton_filename_)
+							name = _skeleton_filename_.split(".")[0].split("/")[7]
 							nan_exception_fH.write( name+"\n" )
 							del_path = '../hoj_test/'+name
 							shutil.rmtree(del_path)
-
-							hoj_sequence = None
 							break
 						else:
-							if compact:
-								hoj_sequence.append(hoj3d_set)
-
-							else:
-								# testing
-								test_filename = os.path.splitext(file)[0] + "/" + os.path.splitext(file)[0] + "_{0:0=3d}".format(i)
-								h3d_t.write_hoj3d(test_filename,hoj3d_set)
-								i += 1
+							# testing
+							test_filename = os.path.splitext(file)[0] + "/" + os.path.splitext(file)[0] + "_{0:0=3d}".format(i)
+							h3d_t.write_hoj3d(test_filename,hoj3d_set)
+							i += 1
 							#Store statistic data
 							number_of_consistent_data_sets += 1
 		
@@ -165,19 +155,12 @@ def main():
 						print("\n")
 						print("!!! Actual set " + _skeleton_filename_ +" has index error(s). !!! \n\n")
 						index_exceptions_fH.write(os.path.basename(_skeleton_filename_)+"\n" )
-			
-				if (hoj_sequence is not None) and (compact):
-					complete_hoj_set.append(np.array(hoj_sequence))
-
 		else:
 			#Store statistic data
 			number_of_inconsistent_data_sets += 1
 			print("\n")			
 			print("!!! Actual set " + _skeleton_filename_ + " has missing or incomplete skeleton data. !!!\n\n")
 			inconsistency_exception_fH.write( os.path.basename(_skeleton_filename_)+"\n" )
-
-	if compact:
-		np.save(np.array(complete_hoj_set))
 
 	computational_end_time = tM.time()
 	timeDiff = dT.timedelta(seconds=computational_end_time - computational_start_time)
@@ -245,8 +228,6 @@ def parseOpts( argv ):
 	parser.add_argument("-aL", "--action_list", action='store', dest='action_list', help="A list of actions in the form: -aL A001,A002,A003,...  ")
 	parser.add_argument("-iT", "--ignore_tail", action='store_true', dest='ignore_tail', default='False', help="The last frame in each set will be skipped if this flag is enabled." )
 	parser.add_argument("-v", "--verbose", action='store_true', dest='verbose', default='False', help="True if you want to listen to the chit-chat.")
-	parser.add_argument("-c", "--compact", action='store_true', dest='compact', default='False', help="If ser it creates a large compact dataset file instasd of a hoj directory structure.")
-
 
 	# finally parse the command line 
 	args = parser.parse_args()
@@ -281,10 +262,9 @@ def parseOpts( argv ):
 	print ("Action list  : ", action_list)
 	print ("Ignore tail  : ", args.ignore_tail)
 	print ("verbose      : ", args.verbose)
-	print ("compact      : ", args.compact)
 	print ("\n\n")
 
-	return path_name, skeleton_name, action_list, args.ignore_tail, args.verbose, args.compact
+	return path_name, skeleton_name, action_list, args.ignore_tail, args.verbose
 
 # ----------------------------------------------------------------------------------------------------------------------------------------------------------
 
