@@ -22,13 +22,7 @@ def compute_hoj3d( list_of_joints, reference_join, reference_join_up, reference_
 	theta_bin = [-15,15,45,75,105,135,165,195]
 
 	# the historamm of joints 3D
-	hoj3d = [[0,0,0,0,0,0,0,0,0,0,0,0],
-	[0,0,0,0,0,0,0,0,0,0,0,0],
-	[0,0,0,0,0,0,0,0,0,0,0,0],
-	[0,0,0,0,0,0,0,0,0,0,0,0],
-	[0,0,0,0,0,0,0,0,0,0,0,0],
-	[0,0,0,0,0,0,0,0,0,0,0,0],
-	[0,0,0,0,0,0,0,0,0,0,0,0]]
+	hoj3d = np.zeros((7,12))
 
 	# get joints to compute
 	if(joint_indexes):
@@ -44,8 +38,8 @@ def compute_hoj3d( list_of_joints, reference_join, reference_join_up, reference_
 	if(use_triangle_function):
 		probability_function = trinangle_function
 
-	arm_length, left_hand_sholder, right_hand_sholder = calculate_arm_length()
-	leg_length, left_foot_hip, right_foot_hip = calculate_leg_length()
+	arm_length, left_hand_sholder, right_hand_sholder = calculate_arm_length(list_of_joints)
+	leg_length, left_foot_hip, right_foot_hip = calculate_leg_length(list_of_joints)
 
 	#translation
 	translation_vector = np.array([-reference_join.get_WorldJoint()[0], -reference_join.get_WorldJoint()[1], -reference_join.get_WorldJoint()[2]])
@@ -120,14 +114,12 @@ def compute_hoj3d( list_of_joints, reference_join, reference_join_up, reference_
 	#hoj = np.array(hoj3d)
 	#print(hoj.sum())
 
-	p_hoj = []
-	p_hoj.append(hoj3d)
-	p_hoj.append([left_hand_sholder, right_hand_sholder, left_foot_hip, right_foot_hip])
+	hoj3d = np.append(hoj3d.flatten(),[left_hand_sholder, right_hand_sholder, left_foot_hip, right_foot_hip])
 
 	t1 = time.time()
 	n_time += t1 - t0
 
-	return np.array(p_hoj),n_time
+	return hoj3d,n_time
 
 def transform_coordinate(x,y,z,vector):
 	vector = np.array(vector)
@@ -199,7 +191,7 @@ def trinangle_function(x,my):
 
 	return max(p,0)
 
-def calculate_arm_length():
+def calculate_arm_length(list_of_joints):
 	# calculate arm lenght
 	#			sholder								elbow
 	left_upper_arm = np.array(list_of_joints[4].get_WorldJoint()) - np.array(list_of_joints[5].get_WorldJoint())
@@ -229,7 +221,7 @@ def calculate_arm_length():
 
 	return arm_length, left, right
 
-def calculate_leg_length:
+def calculate_leg_length(list_of_joints):
 	# calculate leg lenght
 	#			hip								knee
 	left_upper_leg = np.array(list_of_joints[12].get_WorldJoint()) - np.array(list_of_joints[13].get_WorldJoint())
@@ -242,19 +234,19 @@ def calculate_leg_length:
 	#			knee								foot
 	right_under_leg = np.array(list_of_joints[17].get_WorldJoint()) - np.array(list_of_joints[18].get_WorldJoint())
 	right_leg = ma.sqrt((right_upper_leg * right_upper_leg).sum()) + ma.sqrt((right_under_leg * right_under_leg).sum())
-	leg_lenght = ((left_leg + right_leg) / 2)
+	leg_length = ((left_leg + right_leg) / 2)
 
 	# calculate distance hip -> foot
 	#			hip								foot
 	left_vector = np.array(list_of_joints[12].get_WorldJoint()) - np.array(list_of_joints[14].get_WorldJoint())
 	distance_left = ma.sqrt((left_vector * left_vector).sum())
 	# nomalize
-	left = distance_left / arm_length
+	left = distance_left / leg_length
 
 	#			hip								foot
 	right_vector = np.array(list_of_joints[16].get_WorldJoint()) - np.array(list_of_joints[18].get_WorldJoint())
 	distance_right = ma.sqrt((right_vector * right_vector).sum())
 	# normalize
-	right = distance_right / arm_length
+	right = distance_right / leg_length
 
-	return leg_lenght, left, right
+	return leg_length, left, right
