@@ -118,7 +118,7 @@ def main():
 
 						list_of_joints = frame.get_ListOfJoints()
 
-						# gget joints from the paper 3, 5, 9, 6, 10, 13, 17, 14, 18, 12, 16
+						# gget joints from the paper 3, 5, 9, 6, 10, 13, 17, 14, 18
 						# joints_to_compute = []
 						# joints_to_compute.append(list_of_joints[3])		# head 		0
 						# joints_to_compute.append(list_of_joints[5])		# l elbow	1
