@@ -56,7 +56,7 @@ def compute_hoj3d( list_of_joints, reference_join, reference_join_up, reference_
 	#			elbow								hand
 	right_under_arm = np.array(list_of_joints[9].get_WorldJoint()) - np.array(list_of_joints[10].get_WorldJoint())
 	right_arm = ma.sqrt((right_upper_arm * right_upper_arm).sum()) + ma.sqrt((right_under_arm * right_under_arm).sum())
-	cut_radius = ((left_arm + right_arm) / 2) * 2 / 3
+	cut_radius = ((left_arm + right_arm) / 2)
 	# print('cut_radius='+str(cut_radius))
 
 	#translation
@@ -94,7 +94,7 @@ def compute_hoj3d( list_of_joints, reference_join, reference_join_up, reference_
 			except Warning:
 				return [],-1
 
-		inner, outer = r_function(flat_r, cut_radius)
+		inner, outer = r_function(r, cut_radius)
 
 		j = 0
 		for t in theta_bin:
